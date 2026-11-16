@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bản đồ Hoàng thành Huế – ghép asset</title>
+<title>Một ngày làm vua — Hoàng thành</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:#1f2a24;color:#eee;display:flex;height:100vh;overflow:hidden}
 #side{width:250px;background:#16201b;padding:10px;overflow:auto;border-right:1px solid #2e3d35}
@@ -64,7 +64,7 @@ function draw(){
  while(ni<NL.length)drawX(NL[ni++]);
  drawLighting(W,H);drawRain(W,H);
  drawBubbles();
- if(showLbl){const SK=/^(cay_|bui_|tuong_|phao_)/;const fs=Math.max(11,Math.min(15,U*0.42));cx.font='600 '+fs+'px system-ui,sans-serif';cx.textAlign='center';cx.textBaseline='middle';
+ if(showLbl&&U>=2.2){const SK=/^(cay_|bui_|tuong_|phao_)/;const fs=Math.max(11,Math.min(15,U*0.42));cx.font='600 '+fs+'px system-ui,sans-serif';cx.textAlign='center';cx.textBaseline='middle';
   const LB=[];for(const t of order()){if(SK.test(t.id)||!imgs[t.id])continue;const a=D.A[t.id],[px,py]=w2s(t.x,t.y);const w=cx.measureText(a.n).width+12,h=fs+8;LB.push({t,nm:a.n,px,w,h,ly:py-(a.t*1.45+0.9)*CE*U-h/2,py})}
   LB.sort((p,q)=>q.py-p.py);const placed=[];
   for(const l of LB){for(let k=0;k<12;k++){const c=placed.find(o=>Math.abs(o.px-l.px)<(o.w+l.w)/2+2&&Math.abs(o.ly-l.ly)<(o.h+l.h)/2+2);if(!c)break;l.ly=c.ly-(c.h+3)}placed.push(l)}
@@ -411,7 +411,7 @@ function courtBubbles(){for(const ct of CT){const C=ct.ceremony;if(!C)continue;c
   if(crowd==='@tau'){const L=(C.tau[String(GC.season)]||C.tau['0']),i=Math.floor((h-a)/0.42),s=i%2?-1:1,p=lead(s);BUB.push({x:p[0],y:p[1],t:L[i%L.length],c:'#F6E7B8'})}
   else if(crowd){for(const s of [1,-1]){const p=lead(s);BUB.push({x:p[0],y:p[1]+(s>0?0:0),t:crowd,c:'#F6E7B8'})}}}}
 function drawPham(n){const P=(x,y,z)=>pj(x,y,z);isoBox(n.x-0.22,n.x+0.22,n.y-0.12,n.y+0.12,0,0.7,'#b3a482','#d9cdae','#85775a')}
-function courtLabel(){if(!showLbl)return;for(const ct of CT){const [px,py]=w2s((ct.x0+ct.x1)/2+5,ct.y0+0.9);const fs=Math.max(11,Math.min(15,U*0.42));
+function courtLabel(){if(!showLbl||U<2.2)return;for(const ct of CT){const [px,py]=w2s((ct.x0+ct.x1)/2+5,ct.y0+0.9);const fs=Math.max(11,Math.min(15,U*0.42));
   cx.font='600 '+fs+'px system-ui,sans-serif';cx.textAlign='center';cx.textBaseline='middle';const w=cx.measureText(ct.name).width+12,h=fs+8;
   cx.fillStyle='#10201aE6';cx.strokeStyle='#e8b04b';cx.lineWidth=1;cx.beginPath();cx.roundRect(px-w/2,py-h/2,w,h,6);cx.fill();cx.stroke();cx.fillStyle='#fff6d8';cx.fillText(ct.name,px,py+0.5);
   cx.textAlign='start';cx.textBaseline='alphabetic'}}
