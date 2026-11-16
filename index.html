@@ -30,14 +30,15 @@ load();
 let pend=0;for(const k in D.I){const im=new Image();pend++;im.onload=()=>{imgs[k]={im,c:null};if(--pend===0)draw()};im.onerror=()=>{console.warn('Không tải được ảnh',k);if(--pend===0)draw()};im.src=D.I[k]}
 function w2s(x,y){return[(x+y)/S2*U+ox,-((-x+y)/S2)*SE*U+oy]}
 function s2w(sx,sy){const a=(sx-ox)/U*S2,b=-(sy-oy)/(U*SE)*S2;return[(a-b)/2,(a+b)/2]}
-function resize(){cv.width=cv.clientWidth*devicePixelRatio;cv.height=cv.clientHeight*devicePixelRatio;cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);draw()}
+function RDPR(){return (typeof LOW!=='undefined'&&LOW)?1:Math.min(devicePixelRatio,2)}
+function resize(){const d=RDPR();cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);cx.setTransform(d,0,0,d,0,0);if(typeof TC!=='undefined')TC=null;if(typeof MIP!=='undefined')MIP.clear();draw()}
 function rect(t){const a=D.A[t.id],[px,py]=w2s(t.x,t.y),W=U*a.o,Hh=U*a.o,cxp=px,cyp=py-a.t*CE*U;return{x:cxp-W/2,y:cyp-Hh/2,w:W,h:Hh}}
 function order(){return items.filter(t=>t.vis).sort((a,b)=>(b.g-a.g)||((b.y-b.x)-(a.y-a.x)))}
 let VW=0,VH=0;
 // Tối ưu: nền địa hình (ảnh lớn, xoay nghiêng) vẽ một lần vào canvas đệm theo đúng khung nhìn,
 // chỉ vẽ lại khi đổi zoom/kích thước hoặc kéo quá lề đệm. Mỗi khung hình chỉ chép canvas đệm 1:1.
 let TC=null;const TPAD=200;
-function terrainLayer(W,H){const dpr=devicePixelRatio;
+function terrainLayer(W,H){const dpr=RDPR();
  const stale=!TC||TC.U!==U||TC.W!==W||TC.H!==H||TC.dpr!==dpr||Math.abs(ox-TC.ox)>TPAD||Math.abs(oy-TC.oy)>TPAD;
  if(stale){if(!TC||TC.W!==W||TC.H!==H||TC.dpr!==dpr){const c=document.createElement('canvas');c.width=Math.round((W+2*TPAD)*dpr);c.height=Math.round((H+2*TPAD)*dpr);TC={c,g:c.getContext('2d')}}
   const g=TC.g;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W+2*TPAD,H+2*TPAD);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
@@ -76,7 +77,7 @@ function draw(){
  const n=w2s(0,D.R-2);cx.fillStyle='#fff';cx.font='bold 13px sans-serif';cx.fillText('Bắc ↑',n[0]-16,n[1]);const s=w2s(0,-D.R+4);cx.fillText('Nam (Ngọ Môn)',s[0]-45,s[1]+10);
  if(showMist){const g=cx.createLinearGradient(0,0,0,H*0.45);g.addColorStop(0,'rgba(214,232,226,.30)');g.addColorStop(1,'rgba(214,232,226,0)');cx.fillStyle=g;cx.fillRect(0,0,W,H*0.45)}
  drawBirds();drawParticles();
- document.getElementById('hud').textContent=(EDIT?'Chế độ sửa | ':'Đã khóa vị trí | ')+'Zoom '+U.toFixed(1)+' | '+items.filter(t=>t.vis).length+' công trình | '+NL.filter(n=>n.kind!=='corr'&&n.kind!=='pham').length+' người'+(sel>=0?' | '+D.A[items[sel].id].n+' ('+items[sel].x.toFixed(0)+', '+items[sel].y.toFixed(0)+')':'')}
+ document.getElementById('hud').textContent=(LOW?'Chế độ nhẹ | ':'')+(EDIT?'Chế độ sửa | ':'Đã khóa vị trí | ')+'Zoom '+U.toFixed(1)+' | '+items.filter(t=>t.vis).length+' công trình | '+NL.filter(n=>n.kind!=='corr'&&n.kind!=='pham').length+' người'+(sel>=0?' | '+D.A[items[sel].id].n+' ('+items[sel].x.toFixed(0)+', '+items[sel].y.toFixed(0)+')':'')}
 
 // ===== chuyển động: nước, gió, cây rung =====
 let animOn=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches),T0=performance.now(),TT=0;
@@ -85,14 +86,14 @@ const SW=/^(cay_|bui_)/;
 // điểm ảnh hiển thị ở mức zoom hiện tại, rồi mỗi khung hình chỉ chép 1:1 vào vị trí làm tròn điểm ảnh.
 // Ảnh giống hệt vẽ trực tiếp (chỉ lệch vị trí < nửa điểm ảnh). Đổi zoom thì làm lại.
 const MIP=new Map();let MIPU=0,MIPD=0;
-function mip(id,m,w){const dpr=devicePixelRatio,px=Math.round(w*dpr);if(px>1400||px<2)return null;
+function mip(id,m,w){const dpr=RDPR(),px=Math.round(w*dpr);if(px>1400||px<2)return null;
  if(MIPU!==U||MIPD!==dpr){MIP.clear();MIPU=U;MIPD=dpr}
  let c=MIP.get(id);if(!c){c=document.createElement('canvas');c.width=c.height=px;const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(m.im,0,0,px,px);MIP.set(id,c)}
  return c}
 function drawItem(t,m,r){
  if(r.x>VW||r.y>VH||r.x+r.w<0||r.y+r.h<0)return; // ngoài màn hình: bỏ qua
  const c=mip(t.id,m,r.w),img=c||m.im;
- if(!animOn||!SW.test(t.id)){if(c){const d=devicePixelRatio;cx.drawImage(c,Math.round(r.x*d)/d,Math.round(r.y*d)/d,c.width/d,c.height/d)}else cx.drawImage(m.im,r.x,r.y,r.w,r.h);return}
+ if(!animOn||LOW||!SW.test(t.id)){if(c){const d=RDPR();cx.drawImage(c,Math.round(r.x*d)/d,Math.round(r.y*d)/d,c.width/d,c.height/d)}else cx.drawImage(m.im,r.x,r.y,r.w,r.h);return}
  const [px,py]=w2s(t.x,t.y);
  // gió thổi thành từng đợt lan qua bản đồ; cây cao hơn lắc nhiều hơn
  const wave=(t.x+t.y)*0.09, gust=0.55+0.45*Math.sin(TT*0.45-(t.x-t.y)*0.03);
@@ -149,7 +150,7 @@ const CF=(typeof cx.filter==='string');
 function drawKoi(p,k,t){const N=5,sp0=Math.hypot(p.hx*0.7*k.a,p.hy*0.7*k.b)+0.05,dt=0.3*k.sz/(sp0*(0.6+k.sz)),seg=[];
  for(let i=0;i<N;i++)seg.push(koiPos(p,k,t-i*dt*k.dir*1));
  const sp=seg.map(s=>w2s(s[0],s[1]));const w=Math.max(1,k.sz*U*0.42);
- cx.save();cx.globalAlpha=0.68*(0.7+k.dep*0.6);if(CF)cx.filter='blur('+(0.5+k.dep*0.8).toFixed(2)+'px)';cx.lineCap='round';cx.lineJoin='round';
+ cx.save();cx.globalAlpha=0.6*(0.75+k.dep*0.4); /* không dùng filter blur: rất chậm */cx.lineCap='round';cx.lineJoin='round';
  // bóng dưới đáy
  cx.strokeStyle='rgba(10,40,50,.35)';cx.lineWidth=w*1.8;cx.beginPath();cx.moveTo(sp[0][0]+w*0.8,sp[0][1]+w*0.7);for(let i=1;i<N;i++)cx.lineTo(sp[i][0]+w*0.8,sp[i][1]+w*0.7);cx.stroke();
  const e=sp[N-1],f=sp[N-2],ang=Math.atan2(e[1]-f[1],e[0]-f[0]),wag=animOn?Math.sin(t*5+k.ph)*0.5:0;
@@ -321,7 +322,7 @@ function guardUpdate(out,dt){BUB.length=0;
    // lính nói, người lạ đáp (nếu có câu đáp) — lần lượt, không chồng bóng thoại
    if(who.n&&who.n.reply&&slot%2===1)BUB.push({x:who.x,y:who.y,t:who.n.reply,c:'#E9DFC4'});
    else{const p=G.block[Math.floor(slot/2)%2];BUB.push({x:p[0],y:p[1],t:lines[Math.floor(slot/2)%lines.length],c:'#FBF6E6'})}}}}
-function drawBubbles(){if(!BUB.length||U<6)return; // thu nhỏ toàn cảnh thì ẩn thoại cho khỏi rốiconst fs=Math.max(11,Math.min(16,U*0.55));cx.font='600 '+fs+'px system-ui,sans-serif';cx.textBaseline='middle';cx.textAlign='center';
+function drawBubbles(){if(!BUB.length||U<6)return; /* thu nhỏ toàn cảnh thì ẩn thoại */const fs=Math.max(11,Math.min(16,U*0.55));cx.font='600 '+fs+'px system-ui,sans-serif';cx.textBaseline='middle';cx.textAlign='center';
  for(const bb of BUB){const [px,py0]=w2s(bb.x,bb.y),py=py0-U*1.75*1.35;const w=cx.measureText(bb.t).width+16,h=fs+12;
   cx.fillStyle=bb.c;cx.strokeStyle=INK;cx.lineWidth=1.6;cx.beginPath();cx.roundRect(px-w/2,py-h-8,w,h,7);cx.fill();cx.stroke();
   cx.beginPath();cx.moveTo(px-5,py-8.5);cx.lineTo(px,py-1);cx.lineTo(px+5,py-8.5);cx.closePath();cx.fill();cx.stroke();
@@ -356,11 +357,11 @@ function dayLight(h){const s=x=>x<0?0:x>1?1:x*x*(3-2*x);return Math.min(s((h-4.5
 const SEASON_TINT=[[236,246,226],[255,240,206],[238,204,150],[196,206,220]]; // Xuân, Hạ, Thu, Đông
 function seasonTint(c){const a=SEASON_TINT[c.season],b=SEASON_TINT[(c.season+1)%4],f=Math.max(0,(c.seasonFrac-0.85)/0.15);return a.map((v,i)=>Math.round(v+(b[i]-v)*f))}
 // Mỗi mùa một cách chỉnh màu: Xuân tươi mát, Hạ nắng gắt, Thu ngả vàng, Đông nhạt màu và lạnh
-function seasonLayer(i,w,W,H){if(w<=0)return;const L=[
- [['soft-light','rgb(255,232,240)',0.35],['multiply','rgb(240,250,232)',0.5]],
- [['soft-light','rgb(255,214,110)',0.45],['overlay','rgb(140,140,140)',0.12]],
- [['multiply','rgb(242,200,130)',0.55],['soft-light','rgb(255,170,80)',0.3]],
- [['saturation','rgb(128,128,128)',0.5],['multiply','rgb(200,212,228)',0.6]]][i];
+function seasonLayer(i,w,W,H){if(w<=0)return;const L=[ // chỉ multiply + source-over: nhẹ cho máy yếu
+ [['multiply','rgb(238,248,232)',0.6],['source-over','rgb(255,236,242)',0.06]],
+ [['multiply','rgb(255,238,200)',0.55],['source-over','rgb(255,246,214)',0.07]],
+ [['multiply','rgb(240,200,135)',0.6],['source-over','rgb(255,190,110)',0.06]],
+ [['multiply','rgb(196,206,222)',0.65],['source-over','rgb(200,204,210)',0.16]]][i];
  for(const [op,col,a] of L){cx.globalCompositeOperation=op;cx.globalAlpha=a*w;cx.fillStyle=col;cx.fillRect(0,0,W,H)}}
 function isRainy(c){return c.season===3?(c.dayNumber%5!==4):c.season===2?(c.dayNumber%3===0):c.season===1?(c.dayNumber%6===0&&c.hour>13&&c.hour<17):false}
 // Lớp ánh sáng: màu mùa, chạng vạng, đêm (nhân màu), rồi đèn ấm ở công trình khi tối
@@ -382,7 +383,7 @@ function drawLighting(W,H){const c=GC,L=dayLight(c.hour),t=seasonTint(c);
 const RAIN=Array.from({length:160},()=>({u:Math.random(),v:Math.random(),s:0.7+Math.random()*0.6}));
 function drawRain(W,H){if(!animOn||!isRainy(GC))return;const heavy=GC.season===1?1.6:GC.season===3?0.8:1.1;
  cx.save();cx.strokeStyle='rgba(232,240,248,.62)';cx.lineWidth=1.3;cx.beginPath();
- for(const r of RAIN){const y=((r.v+TT*0.9*r.s*heavy)%1)*(H+40)-20,x=((r.u+TT*0.05)%1)*(W+40)-20,l=14*r.s*heavy;cx.moveTo(x,y);cx.lineTo(x-l*0.25,y+l)}
+ for(let ri=0;ri<RAIN.length;ri+=(LOW?2:1)){const r=RAIN[ri];const y=((r.v+TT*0.9*r.s*heavy)%1)*(H+40)-20,x=((r.u+TT*0.05)%1)*(W+40)-20,l=14*r.s*heavy;cx.moveTo(x,y);cx.lineTo(x-l*0.25,y+l)}
  cx.stroke();cx.restore()}
 // Màu hạt bay theo mùa: Xuân hoa đào/mai, Hạ phượng, Thu lá vàng, Đông lá khô thưa
 const PT_COL=[['#f4a7b9','#f6d35c','#fbd0d9'],['#e4553a','#c23b22','#8dbb5b'],['#e3b02e','#cc9a2c','#b7821e'],['#9a7020','#85775a','#b3a482']];
@@ -431,6 +432,7 @@ function drawBirds(){if(!animOn||dayLight(GC.hour)<0.3)return;const dr=[];
 let WC=null,WX=null;
 function drawWater(){
  const n=WM.naturalWidth;if(!WC){WC=document.createElement('canvas');WC.width=WC.height=n;WX=WC.getContext('2d')}
+ if(!LOW||frameN%3===0||!WC._ok){WC._ok=1;
  WX.globalCompositeOperation='source-over';WX.clearRect(0,0,n,n);
  // vạch sóng trắng trượt chậm theo sóng sin, nhấp nháy lấp lánh
  const ph=animOn?TT:0;
@@ -439,19 +441,24 @@ function drawWater(){
   const a=0.30+0.22*Math.sin(ph*1.3+row*0.21);WX.strokeStyle='rgba(250,250,238,'+a.toFixed(3)+')';WX.beginPath();
   for(let x=0;x<=n;x+=16){const y=row+Math.sin(x*0.045+ph*1.2+row*0.08)*3.2;x?WX.lineTo(x,y):WX.moveTo(x,y)}
   WX.stroke()}
- WX.globalCompositeOperation='destination-in';WX.drawImage(WM,0,0);
+ WX.globalCompositeOperation='destination-in';WX.drawImage(WM,0,0);}
  const RR=D.R,k=U/(S2*8)*2;cx.save();cx.globalAlpha=0.85;
  cx.transform(k,k*SE,-k,k*SE,ox,oy-2*RR*U*SE/S2);cx.drawImage(WC,0,0);cx.restore()}
 // hạt lá/cánh hoa bay theo gió
 const PT=Array.from({length:38},(_,i)=>({u:Math.random(),v:Math.random(),s:0.6+Math.random()*0.9,c:i%3}));
 function drawParticles(){
  if(!animOn)return;const W=cv.clientWidth,H=cv.clientHeight,col=PT_COL[GC.season],dl=0.35+0.65*dayLight(GC.hour);
- for(const p of PT){const u=(p.u+TT*0.012*p.s)%1,v=(p.v+Math.sin(TT*0.4+p.s*9)*0.02+TT*0.004*p.s)%1;
+ for(let pi=0;pi<PT.length;pi+=(LOW?2:1)){const p=PT[pi];const u=(p.u+TT*0.012*p.s)%1,v=(p.v+Math.sin(TT*0.4+p.s*9)*0.02+TT*0.004*p.s)%1;
   const x=u*(W+80)-40,y=v*H*0.9+H*0.05+Math.sin(TT*1.8*p.s+p.u*20)*10,a=0.5+0.4*Math.sin(TT*2+p.v*30);
   cx.save();cx.translate(x,y);cx.rotate(TT*p.s*1.4+p.v*6);cx.globalAlpha=Math.max(0.15,a)*dl;cx.fillStyle=col[p.c];
   cx.beginPath();cx.ellipse(0,0,3.2*p.s,1.6*p.s,0,0,7);cx.fill();cx.restore()}}
-let lastMin=-1;function loop(now){TT=Math.max(0,(now-T0)/1000);GC=GameClock.tick();const m=Math.floor(GC.hour*6);
- if(animOn&&!drag)draw();else if(m!==lastMin&&!drag)draw();if(m!==lastMin){lastMin=m;clockUI()}requestAnimationFrame(loop)}
+let LOW=false,FT=16,lastNow=0,slowFor=0,fastFor=0,frameN=0;
+function perfWatch(now){const dt=lastNow?now-lastNow:16;lastNow=now;if(document.hidden||dt>1000)return;FT=FT*0.9+dt*0.1;
+ if(!LOW&&FT>38){slowFor+=dt;if(slowFor>1500){LOW=true;slowFor=0;resize()}}else slowFor=0;
+ if(LOW&&FT<14){fastFor+=dt;if(fastFor>8000){LOW=false;fastFor=0;resize()}}else fastFor=0}
+let lastMin=-1,lastErr=0;function safeDraw(){try{draw()}catch(e){if(performance.now()-lastErr>5000){lastErr=performance.now();console.error('Lỗi khi vẽ (game vẫn chạy tiếp):',e)}cx.restore&&cx.setTransform(RDPR(),0,0,RDPR(),0,0);cx.globalAlpha=1;cx.globalCompositeOperation='source-over'}}
+function loop(now){perfWatch(now);frameN++;TT=Math.max(0,(now-T0)/1000);GC=GameClock.tick();const m=Math.floor(GC.hour*6);
+ if(animOn&&!drag)safeDraw();else if(m!==lastMin&&!drag)safeDraw();if(m!==lastMin){lastMin=m;clockUI()}requestAnimationFrame(loop)}
 document.getElementById('anim').onclick=()=>{animOn=!animOn;draw()};document.getElementById('npc').onclick=()=>{showNpc=!showNpc;draw()};
 document.getElementById('spd').onclick=e=>{const b=e.target.closest('button');if(!b)return;GameClock.setSpeed(+b.dataset.s);document.querySelectorAll('#spd button').forEach(x=>x.classList.toggle('on',x===b))};
 clockUI();requestAnimationFrame(loop);
