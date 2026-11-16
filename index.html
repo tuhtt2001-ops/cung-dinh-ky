@@ -260,7 +260,7 @@ function drawNPC(n){const [px,py]=w2s(n.x,n.y),h=U*1.75;if(px<-40||py<-40||px>cv
       cx.strokeStyle='#C23B22';cx.lineWidth=1*u;cx.beginPath();cx.moveTo(-3.5*u,-25*u);cx.lineTo(9.5*u,-25*u);cx.stroke()}
   }else{
     cx.fillStyle=NPC_INK;cx.beginPath();cx.ellipse(-1.4*u+sw*0.2,-0.4*u,1.2*u,0.6*u,0,0,7);cx.ellipse(1.4*u-sw*0.2,-0.4*u,1.2*u,0.6*u,0,0,7);cx.fill();
-    if(n.pose==='kneel'||n.pose==='bow'){ // quỳ: thân thấp; khấu đầu: cúi rạp, đầu sát đất
+    if(n.pose==='kneel'||n.pose==='bow'){ /* quỳ: thân thấp; khấu đầu: cúi rạp, đầu sát đất */
      const kb=n.pose==='bow';
      poly(kb?[[-4.6,-0.4],[-3.6,-5.2],[3.6,-6.4],[4.8,-0.4]]:[[-3.2,-9.2],[3.2,-9.2],[5,-0.4],[-5,-0.4]],n.col);
      const hy=kb?-6.6:-11.4,hx=kb?0:0;
