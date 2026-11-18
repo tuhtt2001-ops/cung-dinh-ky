@@ -1,4 +1,4 @@
-# Một ngày làm vua — bản chơi thử trên web
+# Cung Đình Ký — bản chơi thử trên web
 
 Bản đồ Hoàng thành (isometric, phong cách tranh Đông Hồ × Hàng Trống) với 4 mùa, ngày đêm,
 lễ chầu buổi sáng, lính tuần, cung nữ, quan lại.
