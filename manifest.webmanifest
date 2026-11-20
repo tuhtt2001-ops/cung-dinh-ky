@@ -1,0 +1,16 @@
+{
+  "name": "Cung Đình Ký",
+  "short_name": "Cung Đình Ký",
+  "description": "Nhập vai hoàng tử trong Hoàng thành Huế, phong cách tranh Đông Hồ.",
+  "lang": "vi",
+  "start_url": "3d.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#3a150f",
+  "theme_color": "#3a150f",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
