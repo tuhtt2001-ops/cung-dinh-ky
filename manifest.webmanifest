@@ -6,7 +6,7 @@
   "start_url": "3d.html",
   "scope": "./",
   "display": "fullscreen",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#3a150f",
   "theme_color": "#3a150f",
   "icons": [
