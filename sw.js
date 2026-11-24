@@ -1,6 +1,6 @@
 /* Cung Đình Ký — service worker (W121): cài như app, mở nhanh, chơi được khi mất mạng.
    Chiến lược: trả bản đã lưu ngay, đồng thời tải bản mới ở nền (lần mở sau dùng bản mới). Tên bộ nhớ đệm đổi theo phiên bản để dọn bản cũ. */
-const VER = '935025c', CACHE = 'cdk-' + VER, CORE = ['3d.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const VER = '390eddd', CACHE = 'cdk-' + VER, CORE = ['3d.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('cdk-') && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', (e) => {
